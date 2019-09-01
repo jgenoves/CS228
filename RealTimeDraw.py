@@ -1,6 +1,8 @@
-import pygame
 from pygameWindow import PYGAME_WINDOW
 
 pygWindow = PYGAME_WINDOW()
 
-print(pygWindow)
+while True:
+    pygWindow.Prepare()
+    pass
+    pygWindow.Reveal()
