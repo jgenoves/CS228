@@ -35,6 +35,9 @@ yMax = -1000.0
 
 def Scale(a, deviceMin, deviceMax, pyMin, pyMax):
 
+    # This formula is used to scale the dot from the devices coordinates
+    # to the pygame window coordinates
+
     if deviceMin != deviceMax:
         
         deviceLength = abs(deviceMax - deviceMin)
@@ -55,20 +58,21 @@ def Scale(a, deviceMin, deviceMax, pyMin, pyMax):
 
 def Handle_Frame(frame):
     global x, y, xMin, xMax, yMin, yMax
+
+    # Algorithm for retrieving the tip of the index finger's
+    # coordinates from the connect LEAP device
     hand = frame.hands[0]
     fingers = hand.fingers
     indexFingerList = fingers.finger_type(1)
     indexFinger = indexFingerList[0]
     distalPhalanx = indexFinger.bone(3)
-    tip = distalPhalanx.next_joint
+    tip = distalPhalanx.next_joint    
+    intX = int(tip[0])
+    intY = int(tip[1])  
+    x = intX
+    y = intY
     
-    newX = int(tip[0])
-    newY = int(tip[1])
-
-    
-    x = newX
-    y = newY
-
+    # Ensures the dot never leaves the screen
     if(x < xMin):
         xMin = x
     if(x > xMax):
