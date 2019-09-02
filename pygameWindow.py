@@ -3,8 +3,11 @@ from constants import pygameWindowWidth, pygameWindowDepth
 
 class PYGAME_WINDOW:
     def __init__(self):
+
+        self.pygWindowWidth = pygameWindowWidth
+        self.pygWindowDepth = pygameWindowDepth
         pygame.init()
-        self.screen = pygame.display.set_mode((pygameWindowWidth,pygameWindowDepth))
+        self.screen = pygame.display.set_mode((self.pygWindowWidth,self.pygWindowDepth))
 
     def Prepare(self):
         white = (255,255,255)
@@ -15,3 +18,5 @@ class PYGAME_WINDOW:
 
     def Draw_Black_Circle(self,x,y):
         pygame.draw.circle(self.screen, (0,0,0), [x,y], 25)
+
+        
