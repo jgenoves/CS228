@@ -11,27 +11,10 @@ import random
 
 pygWindow = PYGAME_WINDOW()
 
-x = 500
-y = 500
-
 xMin = 1000.0
 xMax = -1000.0
 yMin = 1000.0
 yMax = -1000.0
-
-# def Perturb_Circle_Position():
-#     global x, y
-
-#     fourSidedDieRoll = random.randint(1,4)
-
-#     if fourSidedDieRoll == 1:
-#         x += -1
-#     elif(fourSidedDieRoll == 2):
-#         x += 1
-#     elif(fourSidedDieRoll == 3):
-#         y += -1
-#     elif(fourSidedDieRoll == 4):
-#         y += 1
 
 def Scale(a, deviceMin, deviceMax, pyMin, pyMax):
 
@@ -53,26 +36,14 @@ def Scale(a, deviceMin, deviceMax, pyMin, pyMax):
     else:
 
         return abs(pyMax - pyMin)/2
+
+
+def Handle_Vector_From_Leap(v):
+    global xMin, xMax, yMin, yMax
     
+    x = int(v[0])
+    y = int(v[2])
 
-
-def Handle_Frame(frame):
-    global x, y, xMin, xMax, yMin, yMax
-
-    # Algorithm for retrieving the tip of the index finger's
-    # coordinates from the connect LEAP device
-    hand = frame.hands[0]
-    fingers = hand.fingers
-    indexFingerList = fingers.finger_type(1)
-    indexFinger = indexFingerList[0]
-    distalPhalanx = indexFinger.bone(3)
-    tip = distalPhalanx.next_joint    
-    intX = int(tip[0])
-    intY = int(tip[1])  
-    x = intX
-    y = intY
-    
-    # Ensures the dot never leaves the screen
     if(x < xMin):
         xMin = x
     if(x > xMax):
@@ -81,6 +52,49 @@ def Handle_Frame(frame):
         yMin = y
     if(y > yMax):
         yMax = y
+
+    x = Scale(x, xMin, xMax, 0, pygWindow.pygWindowWidth)
+    y = Scale(y, yMin, yMax, 0, pygWindow.pygWindowDepth)
+   
+    return (x,y)
+
+
+def Handle_Bone(bone, drawingWidth):
+    base = bone.prev_joint
+    tip = bone.next_joint
+        
+    (baseX, baseY) = Handle_Vector_From_Leap(base)
+    (tipX, tipY) = Handle_Vector_From_Leap(tip)
+
+    PYGAME_WINDOW.Draw_Black_Line(pygWindow, baseX, baseY, tipX, tipY, drawingWidth)
+
+
+
+def Handle_Finger(finger):
+    for b in range(4):
+        
+        dWidth = 0
+        if(b == 0):
+            dWidth = 4
+        elif(b == 1):
+            dWidth = 3
+        elif(b == 2):
+            dWidth = 2
+        elif(b == 3):
+            dWidth = 1
+            
+        Handle_Bone(finger.bone(b), dWidth)
+            
+
+def Handle_Frame(frame):
+
+    hand = frame.hands[0]
+    fingers = hand.fingers
+
+    for finger in fingers:
+        Handle_Finger(finger)
+            
+    pass
 
     
     
@@ -92,12 +106,5 @@ while True:
     frame = controller.frame()
     if (len(frame.hands) > 0):
         Handle_Frame(frame)
-        x = Scale(x, xMin, xMax, 0, pygWindow.pygWindowWidth)
-        y = Scale(y, yMax, yMin, 0, pygWindow.pygWindowDepth)
-        print(x,y)
-        int(x)
-        int(y)
-
-    PYGAME_WINDOW.Draw_Black_Circle(pygWindow, x, y)
     pygWindow.Reveal()
     
