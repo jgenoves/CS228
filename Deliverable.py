@@ -1,9 +1,10 @@
 import sys
+import numpy as np
 
 sys.path.insert(0, '..')
 
 import Leap
-from pygameWindow import PYGAME_WINDOW
+from pygameWindow_Del03 import PYGAME_WINDOW
 
 controller = Leap.Controller()
 
@@ -18,6 +19,8 @@ class DELIVERABLE:
         self.x = 0
         self.y = 0
         self.pygameWindow = PYGAME_WINDOW()
+        self.prevNumberOfHands = 0
+        self.currNumberOfHands = 0
         
     def Scale(self, a, deviceMin, deviceMax, pyMin, pyMax):
 
@@ -69,7 +72,16 @@ class DELIVERABLE:
         (baseX, baseY) = self.Handle_Vector_From_Leap(base)
         (tipX, tipY) = self.Handle_Vector_From_Leap(tip)
 
-        PYGAME_WINDOW.Draw_Black_Line(self.pygameWindow, baseX, baseY, tipX, tipY, drawingWidth)
+        r = 0
+        g = 255
+        b = 0
+
+        if(self.currNumberOfHands == 2):
+            r = 255
+            g = 0
+            b = 0
+
+        PYGAME_WINDOW.Draw_Line(self.pygameWindow, baseX, baseY, tipX, tipY, drawingWidth, r, g, b)
 
 
 
@@ -97,15 +109,36 @@ class DELIVERABLE:
         for finger in fingers:
             self.Handle_Finger(finger)
                 
-        pass
-
+        if self.Recording_Is_Ending():
+            print('recording is ending')
+    
+    def Recording_Is_Ending(self):
+        if(self.currNumberOfHands == 1 and self.prevNumberOfHands == 2):
+            return True
+            
+    
     def Run_Once(self):
         self.pygameWindow.Prepare()
         frame = controller.frame()
+
+        if len(frame.hands) == 1:
+            self.currNumberOfHands = 1
+        elif len(frame.hands) == 2:
+             self.currNumberOfHands = 2
+        else:
+             self.currNumberOfHands = 0
+        
         if (len(frame.hands) > 0):
             self.Handle_Frame(frame)
         self.pygameWindow.Reveal()
 
+        
+        if len(frame.hands) == 1:
+            self.prevNumberOfHands = 1
+        elif len(frame.hands) == 2:
+             self.prevNumberOfHands = 2
+        else:
+             self.prevNumberOfHands = 0
 
     def Run_Forever(self):
         while True:
