@@ -1,5 +1,7 @@
 import sys
 import numpy as np
+import pickle
+import os
 
 sys.path.insert(0, '..')
 
@@ -22,6 +24,14 @@ class DELIVERABLE:
         self.prevNumberOfHands = 0
         self.currNumberOfHands = 0
         self.gestureData = np.zeros((5,4,6), dtype='f')
+        self.fileIndex = 0
+        self.Recreate_userData_Directory()
+
+    def Recreate_userData_Directory(self):
+        path = os.getcwd() + "\\userData\\"
+        os.rmdir(path)
+        os.mkdir(path)
+        
         
     def Scale(self, a, deviceMin, deviceMax, pyMin, pyMax):
 
@@ -123,7 +133,17 @@ class DELIVERABLE:
             self.Handle_Finger(fingers[i], i)
                 
         if self.Recording_Is_Ending():
-            print(self.gestureData)
+            self.Save_Gesture()
+            
+
+    def Save_Gesture(self):
+        file_string = "userData/gesture" + str(self.fileIndex) + ".p"
+        self.fileIndex += 1
+        pickle_out = open(file_string, "wb")
+        pickle.dump(self.gestureData, pickle_out)
+        pickle_out.close()
+
+
     
     def Recording_Is_Ending(self):
         if(self.currNumberOfHands == 1 and self.prevNumberOfHands == 2):
