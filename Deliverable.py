@@ -21,6 +21,7 @@ class DELIVERABLE:
         self.pygameWindow = PYGAME_WINDOW()
         self.prevNumberOfHands = 0
         self.currNumberOfHands = 0
+        self.gestureData = np.zeros((5,4,6), dtype='f')
         
     def Scale(self, a, deviceMin, deviceMax, pyMin, pyMax):
 
@@ -65,12 +66,23 @@ class DELIVERABLE:
         return (self.x, self.y)
 
 
-    def Handle_Bone(self, bone, drawingWidth):
+    def Handle_Bone(self, bone, drawingWidth, i, j):
         base = bone.prev_joint
         tip = bone.next_joint
+        
+        if self.Recording_Is_Ending():           
+            self.gestureData[i,j,0] = base[0]
+            self.gestureData[i,j,1] = base[1]
+            self.gestureData[i,j,2] = base[2]
+            
+            self.gestureData[i,j,3] = tip[0]
+            self.gestureData[i,j,4] = tip[1]
+            self.gestureData[i,j,5] = tip[2]
+       
             
         (baseX, baseY) = self.Handle_Vector_From_Leap(base)
         (tipX, tipY) = self.Handle_Vector_From_Leap(tip)
+
 
         r = 0
         g = 255
@@ -85,20 +97,21 @@ class DELIVERABLE:
 
 
 
-    def Handle_Finger(self, finger):
-        for b in range(4):
+    def Handle_Finger(self, finger, i):
+        
+        for j in range(4):
             
             dWidth = 0
-            if(b == 0):
+            if(j == 0):
                 dWidth = 4
-            elif(b == 1):
+            elif(j == 1):
                 dWidth = 3
-            elif(b == 2):
+            elif(j == 2):
                 dWidth = 2
-            elif(b == 3):
+            elif(j == 3):
                 dWidth = 1
                 
-            self.Handle_Bone(finger.bone(b), dWidth)
+            self.Handle_Bone(finger.bone(j), dWidth, i, j)
                 
 
     def Handle_Frame(self, frame):
@@ -106,11 +119,11 @@ class DELIVERABLE:
         hand = frame.hands[0]
         fingers = hand.fingers
 
-        for finger in fingers:
-            self.Handle_Finger(finger)
+        for i in range(5):
+            self.Handle_Finger(fingers[i], i)
                 
         if self.Recording_Is_Ending():
-            print('recording is ending')
+            print(self.gestureData)
     
     def Recording_Is_Ending(self):
         if(self.currNumberOfHands == 1 and self.prevNumberOfHands == 2):
